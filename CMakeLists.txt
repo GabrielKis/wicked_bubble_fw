@@ -25,10 +25,10 @@ target_sources(app PRIVATE
                 src/main.c
                 src/message_hmi_main.c
                 src/hmi/uart_cmd.c
-                src/servo/servo_control.c
+                src/io_bubble/bubble_control.c
 )
 
 target_include_directories(app PRIVATE  src
                                         src/hmi
-                                        src/servo
+                                        src/io_bubble
 )

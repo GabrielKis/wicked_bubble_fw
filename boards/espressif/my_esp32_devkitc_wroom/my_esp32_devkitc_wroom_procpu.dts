@@ -20,7 +20,6 @@
 		sw0 = &button0;
 		watchdog0 = &wdt0;
 		led0 = &led0;
-		pwm0 = &smpwm0;
 	};
 
 	buttons {
@@ -37,13 +36,6 @@
 		led0: led_0 {
 			gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
 			label = "LED 0";
-		};
-	};
-
-	servomotor {
-		compatible = "pwm-leds";
-		smpwm0: smpwm_0 {
-			pwms = <&mcpwm0 0 20000 PWM_POLARITY_NORMAL>; //Channel 0 -> Output PWM0A
 		};
 	};
 
@@ -68,15 +60,5 @@
 };
 
 &gpio1 {
-	status = "okay";
-};
-
-&mcpwm0 {
-	pinctrl-0 = <&mcpwm0_default>;
-	pinctrl-names = "default";
-	prescale = <255>;
-	prescale-timer0 = <50>;
-	prescale-timer1 = <103>;
-	prescale-timer2 = <255>;
 	status = "okay";
 };

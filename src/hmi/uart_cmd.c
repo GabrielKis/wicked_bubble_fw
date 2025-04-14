@@ -14,7 +14,7 @@
 
 #define RING_BUF_SIZE 64
 
-#define UART_CMD_ARRAY_SZ   5U
+#define UART_CMD_ARRAY_SZ   3U
 #define UART_ARRAY_SZ       20U
 
 // Thread initialization
@@ -25,7 +25,6 @@ k_tid_t uart_thread_id;
 // UART and ring buffer initialization
 RING_BUF_DECLARE(uart_ringbuf, RING_BUF_SIZE);
 static const struct device *uart_dev = DEVICE_DT_GET(DT_NODELABEL(uart0));
-
 struct UART_Command
 {
     uint8_t size;
@@ -35,72 +34,38 @@ struct UART_Command
     char *help_text;
 };
 
-static void uart_cmd_set_duty(uint8_t *cmd, uint8_t sz);
-static void uart_cmd_set_period(uint8_t *cmd, uint8_t sz);
-static void uart_cmd_set_servo_angle(uint8_t *cmd, uint8_t sz);
-static void uart_cmd_read_servo_data(uint8_t *cmd, uint8_t sz);
+static void uart_cmd_bubble_control(uint8_t *cmd, uint8_t sz);
 static void uart_cmd_help_message(uint8_t *cmd, uint8_t sz);
 
 static struct UART_Command commands_list[UART_CMD_ARRAY_SZ] = {
-    {.size = 5, .header = {'1', ' '}, .header_size = 2, .func = uart_cmd_set_duty, .help_text = "1 XXX: Set duty cycle : ex - \"1 505\" -> 50,5\%\n"},
-    {.size = 6, .header = {'2', ' '}, .header_size = 2, .func = uart_cmd_set_period, .help_text = "2 XXXX: Set period (ms): ex - \"2 9999\" -> 9999ms\n"},
-    {.size = 5, .header = {'3', ' '}, .header_size = 2, .func = uart_cmd_set_servo_angle, .help_text = "3 XXX: Set servo motor angle (0 - 180): ex - \"3 1201\" -> 120,1 degrees\n"},
-    {.size = 1, .header = {'4'},      .header_size = 1, .func = uart_cmd_read_servo_data, .help_text = "4 : ex - \"4\" Read info about Servo PWM (Period, Duty, Angle)\n"},
-    {.size = 1, .header = {'0'},      .header_size = 1, .func = uart_cmd_help_message, .help_text = NULL},
+    {.size = 1, .header = {'1'}, .header_size = 1, .func = uart_cmd_bubble_control, .help_text = "1: Turn on Bubble\n"},
+    {.size = 1, .header = {'2'}, .header_size = 1, .func = uart_cmd_bubble_control, .help_text = "2: Turn off Bubble\n"},
+    {.size = 1, .header = {'0'}, .header_size = 1, .func = uart_cmd_help_message, .help_text = NULL},
 };
 
-static void uart_cmd_set_duty(uint8_t *cmd, uint8_t sz)
+static void uart_cmd_bubble_control(uint8_t *cmd, uint8_t sz)
 {
     struct hmi_msg_t msg = {
-        .type = HMI_CMD_SET_DUTY,
-        .module = MOD_SERVO,
-        .data.duty = atoi((char *)cmd + 2)
+        .type = HMI_CMD_BUBBLE_ON,
+        .module = MOD_BUBBLE,
     };
+
+    if (cmd == NULL) {
+        printk("Command unknown\n");
+        return;
+    }
+
+    if (cmd[0] == '1') {
+        msg.type = HMI_CMD_BUBBLE_ON;
+    } else if (cmd[0] == '2') {
+        msg.type = HMI_CMD_BUBBLE_OFF;
+    } else {
+        printk("Command unknown\n");
+        return;
+    }
 
     if (send_message_hmi_to_main(&msg) != 0) {
         printk("Failed to send duty command to queue\n");
-    }
-}
-
-static void uart_cmd_set_period(uint8_t *cmd, uint8_t sz)
-{
-    struct hmi_msg_t msg = {
-        .type = HMI_CMD_SET_PERIOD,
-        .module = MOD_SERVO,
-        .data.period = atoi((char *)cmd + 2)
-    };
-
-    if (send_message_hmi_to_main(&msg) != 0) {
-        // TODO: Decide whether Handle this message error to eventually retry
-        printk("Failed to send period command to queue\n");
-    }
-}
-
-static void uart_cmd_set_servo_angle(uint8_t *cmd, uint8_t sz)
-{
-    struct hmi_msg_t msg = {
-        .type = HMI_CMD_SET_SERVO_ANGLE,
-        .module = MOD_SERVO,
-        .data.period = atoi((char *)cmd + 2)
-    };
-
-    if (send_message_hmi_to_main(&msg) != 0) {
-        // TODO: Decide whether Handle this message error to eventually retry
-        printk("Failed to send period command to queue\n");
-    }
-    printk("uart_cmd_set_servo_angle\n");
-}
-
-static void uart_cmd_read_servo_data(uint8_t *cmd, uint8_t sz)
-{
-    struct hmi_msg_t msg = {
-        .type = HMI_CMD_READ_SERVO_DATA,
-        .module = MOD_SERVO
-    };
-
-    if (send_message_hmi_to_main(&msg) != 0) {
-        // TODO: Decide whether Handle this message error to eventually retry
-        printk("Failed to send period command to queue\n");
     }
 }
 
@@ -127,6 +92,7 @@ static void process_uart_data(uint8_t *data, uint8_t size)
     for (uint8_t i=0; i<UART_CMD_ARRAY_SZ; i++) {
         if (size < commands_list[i].header_size) {
             // not this command
+            printf("here\n");
             continue;
         }
 
