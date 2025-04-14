@@ -6,11 +6,8 @@
 #include <zephyr/kernel.h>
 #include <app_version.h>
 #include "uart_cmd.h"
-#include "servo_control.h"
+#include "bubble_control.h"
 #include "message_hmi_main.h"
-
-// Assuming you have defined your message queue or other IPC mechanism
-// For example, using a message queue:
 
 void handle_hmi_msg(void)
 {
@@ -21,15 +18,19 @@ void handle_hmi_msg(void)
 
     switch (hmi_msg.module) {
         case MOD_MAIN:
-            printk("HMI Command to Main Thread\n"); 
+            //printk("HMI Command to Main Thread\n");
             break;
-        case MOD_SERVO:
-            printk("HMI Command to Servo Thread\n");
-            struct main_to_servo_msg_t main_to_servo = {};
-            //prepare_main_to_servo_msg(&hmi_msg, &main_to_servo);
-            main_to_servo.type = hmi_msg.type;
-            main_to_servo.data.duty = hmi_msg.data.duty;
-            send_message_main_to_servo(&main_to_servo);
+        case MOD_BUBBLE:
+            //printk("HMI Command to Bubble Thread\n");
+            struct main_to_bubble_msg_t main_to_bubble = {};
+            if (hmi_msg.type == HMI_CMD_BUBBLE_ON) {
+                main_to_bubble.type = MAIN_CMD_BUBBLE_ON;
+            } else if (hmi_msg.type == HMI_CMD_BUBBLE_OFF) {
+                main_to_bubble.type = MAIN_CMD_BUBBLE_OFF;
+            } else {
+                return;
+            }
+            send_message_main_to_bubble(&main_to_bubble);
             //TODO: Handle return from message sent
             break;
         default:
@@ -42,7 +43,7 @@ int main(void)
 {
     printk("Zephyr Example Application %s\n", APP_VERSION_STRING);
 
-    servo_thread_start();
+    bubble_thread_start();
     uart_thread_start();
 
     while (1) {
