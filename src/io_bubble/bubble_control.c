@@ -6,7 +6,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
-#include "message_hmi_main.h"
+#include "message_main_bubble.h"
 
 /* PWM device for servo control */
 #define BUBBLE_THREAD_STACK_SIZE 1024
