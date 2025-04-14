@@ -8,6 +8,7 @@
 #include "uart_cmd.h"
 #include "bubble_control.h"
 #include "message_hmi_main.h"
+#include "message_main_bubble.h"
 
 void handle_hmi_msg(void)
 {
@@ -22,7 +23,7 @@ void handle_hmi_msg(void)
             break;
         case MOD_BUBBLE:
             //printk("HMI Command to Bubble Thread\n");
-            struct main_to_bubble_msg_t main_to_bubble = {};
+            struct main_to_bubble_msg_t main_to_bubble = {0};
             if (hmi_msg.type == HMI_CMD_BUBBLE_ON) {
                 main_to_bubble.type = MAIN_CMD_BUBBLE_ON;
             } else if (hmi_msg.type == HMI_CMD_BUBBLE_OFF) {
