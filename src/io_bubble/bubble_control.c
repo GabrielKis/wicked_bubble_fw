@@ -37,6 +37,8 @@ static void init_io(void)
     if (ret < 0) {
         printk("Error %d: failed to configure LED pin\n", ret);
     }
+
+    gpio_pin_set_dt(&bubble_io, 0);
 }
 
 void handle_main_msg(void)

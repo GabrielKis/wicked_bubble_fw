@@ -24,13 +24,17 @@ zephyr_include_directories(include)
 target_sources(app PRIVATE
                 src/main.c
                 src/thread_msg/message_hmi_main.c
+                src/thread_msg/message_iot_main.c
                 src/thread_msg/message_main_bubble.c
                 src/hmi/uart_cmd.c
                 src/io_bubble/bubble_control.c
+                src/iot/iot_thread.c
+                src/iot/iot_mqtt.c
 )
 
 target_include_directories(app PRIVATE  src
                                         src/hmi
                                         src/io_bubble
                                         src/thread_msg
+                                        src/iot
 )
