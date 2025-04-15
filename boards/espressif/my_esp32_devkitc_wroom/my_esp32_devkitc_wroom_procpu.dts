@@ -39,6 +39,11 @@
 		};
 	};
 
+	wifi_sta: wifi_sta {
+		compatible = "espressif,esp32-wifi";
+		status = "okay";
+	};
+
 	chosen {
 		zephyr,sram = &sram1;
 		zephyr,console = &uart0;
